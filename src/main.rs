@@ -1,5 +1,7 @@
 mod cli;
 
+use cli::entry_point;
+
 fn main() {
-    println!("Hello, world!");
+    entry_point();
 }

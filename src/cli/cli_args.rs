@@ -6,6 +6,5 @@ use std::path::PathBuf;
 #[command(about = "File system utility tools", long_about = None)]
 pub struct Cli {
     /// Directory path to start from
-    #[arg(default_value = ".")]
-    path: PathBuf,
+    pub path: PathBuf,
 }
