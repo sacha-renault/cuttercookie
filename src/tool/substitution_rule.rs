@@ -9,7 +9,7 @@ impl SubstitutionRule {
     pub fn new(pattern: String, replacement: String) -> Self {
         Self {
             pattern,
-            replacement
+            replacement: format!("{{cookiecutter.{}}}", replacement)
         }
     }
 }
