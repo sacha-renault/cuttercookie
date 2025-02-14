@@ -1,3 +1,5 @@
+use std::cmp::Reverse;
+
 use regex::Regex;
 
 /// Represents a single regex substitution rule with pattern and replacement
@@ -30,7 +32,11 @@ pub struct RegexReplacer {
 
 impl RegexReplacer {
     /// Creates a new RegexReplacer from a collection of substitution rules
-    pub fn new(rules: Vec<SubstitutionRule>) -> Self {
+    pub fn new(mut rules: Vec<SubstitutionRule>) -> Self {
+        // Sort rules by pattern length (descending)
+        // This ensure that the longest pattern will matches first
+        rules.sort_by_key(|r| Reverse(r.pattern.len()));
+
         // Combine all rules into a single regex with capture groups
         let combined_pattern = rules.iter()
             .map(|rule| format!("({})", rule.pattern.as_str()))
@@ -49,9 +55,12 @@ impl RegexReplacer {
     /// * String with all matching patterns replaced according to the rules
     ///
     /// # Behavior
-    /// * Processes all matches using the combined regex
-    /// * Applies the corresponding replacement for each matched pattern
-    /// * Preserves original text for non-matching sections
+    /// * Matches all patterns simultaneously using a combined regex
+    /// * Each pattern match is processed exactly once
+    /// * Rules are applied independently and do not cascade:
+    ///   - If rule1 replaces "a" with "b" and rule2 replaces "b" with "c",
+    ///   - An input "a" will become "b", not "c"
+    /// * Non-matching sections remain unchanged
     pub fn replace(&self, content: &str) -> String {
         self.combined_regex.replace_all(content, |caps: &regex::Captures| {
             for (i, rule) in self.rules.iter().enumerate() {
