@@ -9,8 +9,8 @@ use super::{SubstitutionRule, RegexReplacer};
 ///
 /// # Arguments
 /// * `json_str` - JSON string containing pattern-replacement pairs where:
-///   - Keys are regex patterns
-///   - Values are replacement strings
+///   - Keys are replacement strings
+///   - Values are regex patterns
 ///
 /// # Returns
 /// * `Result<RegexReplacer>` - A RegexReplacer configured with the parsed rules
@@ -25,8 +25,8 @@ fn parse_json_pairs(json_str: &str) -> Result<RegexReplacer> {
         Value::Object(map) => {
             let subs = map
                 .into_iter()
-                .map(|(pattern, value)| {
-                    let replacement = value.as_str()
+                .map(|(replacement, value)| {
+                    let pattern = value.as_str()
                         .ok_or_else(|| anyhow::anyhow!("Value must be a string"))?
                         .to_string();
                     Ok(SubstitutionRule::new(pattern, replacement))
@@ -54,10 +54,10 @@ fn parse_json_pairs(json_str: &str) -> Result<RegexReplacer> {
 /// The configuration file must contain key-value pairs where:
 /// - Keys are string patterns to match
 /// - Values are their corresponding replacement strings
-pub fn read_json_pairs(path: &str) -> Result<RegexReplacer> {
+pub fn build_replacer(path: &str) -> Result<RegexReplacer> {
     let json_str = match fs::read_to_string(path) {
         Ok(json) => json,
-        Err(_) => return Err(anyhow::anyhow!("Couldn't read \"cuttercookie.json\" at the root path"))
+        Err(_) => return Err(anyhow::anyhow!("Couldn't read \"cookiecutter.json\" at the root path"))
     };
     Ok(parse_json_pairs(&json_str)?)
 }
@@ -130,7 +130,7 @@ mod test {
         }"#;
 
         let temp_file = create_temp_json_file(json_content)?;
-        let replacer = read_json_pairs(temp_file.path().to_str().unwrap())
+        let replacer = build_replacer(temp_file.path().to_str().unwrap())
             .expect("Failed to read valid JSON file");
 
         assert_eq!(replacer.replace("hello world"), "{{cookiecutter.greeting}}");
@@ -140,7 +140,7 @@ mod test {
 
     #[test]
     fn test_read_nonexistent_file() {
-        let result = read_json_pairs("nonexistent_file.json");
+        let result = build_replacer("nonexistent_file.json");
         assert!(result.is_err());
     }
 
@@ -152,7 +152,7 @@ mod test {
         }"#;
 
         let temp_file = create_temp_json_file(invalid_json)?;
-        let result = read_json_pairs(temp_file.path().to_str().unwrap());
+        let result = build_replacer(temp_file.path().to_str().unwrap());
 
         assert!(result.is_err());
         Ok(())
