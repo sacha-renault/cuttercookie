@@ -29,7 +29,7 @@ pub fn entry_point() -> Result<(), String> {
     }
 
     // process files
-    match process_files(args.path.as_str(), args.excluded_items, replacer) {
+    match process_files(args.path.as_str(), ".", args.excluded_items, replacer) {
         Ok(_) => Ok(()),
         Err(err) => Err(format!("Proccess had error : {}", err))
     }
