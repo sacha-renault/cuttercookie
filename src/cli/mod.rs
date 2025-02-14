@@ -8,5 +8,5 @@ use crate::tool::read_json_pairs;
 pub fn entry_point() {
     let args = Cli::parse();
     let pairs = read_json_pairs("cuttercookie.json");
-    println!("Hello, {:?} / {:?} !", args.path, pairs);
+    println!("Hello, {:?} !", args.path);
 }
