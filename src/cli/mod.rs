@@ -8,6 +8,30 @@ use clap::Parser;
 use cli_args::Cli;
 use crate::tool::{read_json_pairs, process_files};
 
+/// Application entry point that handles command-line arguments and file processing
+///
+/// # Functionality
+/// - Parses command-line arguments
+/// - Validates working directory state
+/// - Configures and executes file processing based on provided arguments
+///
+/// # Process Flow
+/// 1. Parses command-line arguments using `clap`
+/// 2. Constructs path to `cuttercookie.json` configuration file
+/// 3. Initializes regex replacer with patterns from configuration
+/// 4. Validates that current directory is empty
+/// 5. Processes files according to specified parameters
+///
+/// # Returns
+/// * `Result<(), String>` - Success (`Ok(())`) if processing completes,
+///   or `Err` with error description if any step fails
+///
+/// # Errors
+/// Returns error in following cases:
+/// - Current directory is not empty
+/// - Configuration file cannot be read or parsed
+/// - File processing encounters errors
+/// - Directory access is restricted
 pub fn entry_point() -> Result<(), String> {
     // parse the console args
     let args = Cli::parse();
