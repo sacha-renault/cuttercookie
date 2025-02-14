@@ -5,6 +5,19 @@ use anyhow::Result;
 
 use super::{SubstitutionRule, RegexReplacer};
 
+/// Parses a JSON string into a RegexReplacer containing substitution rules
+///
+/// # Arguments
+/// * `json_str` - JSON string containing pattern-replacement pairs where:
+///   - Keys are regex patterns
+///   - Values are replacement strings
+///
+/// # Returns
+/// * `Result<RegexReplacer>` - A RegexReplacer configured with the parsed rules
+///
+/// # Errors
+/// * Returns error if input is not a valid JSON object
+/// * Returns error if any value in the JSON is not a string
 fn parse_json_pairs(json_str: &str) -> Result<RegexReplacer> {
     let parsed: Value = serde_json::from_str(json_str)?;
 
@@ -26,6 +39,25 @@ fn parse_json_pairs(json_str: &str) -> Result<RegexReplacer> {
     }
 }
 
+/// Reads and parses substitution rules from a JSON file at the specified path
+///
+/// # Arguments
+/// * `path` - File path to the JSON configuration file
+///
+/// # Returns
+/// * `RegexReplacer` - A RegexReplacer configured with the rules from the file
+///
+/// # Panics
+/// * Panics if the file cannot be read
+/// * Panics if the JSON content cannot be parsed into valid substitution rules
+///
+/// # Expected JSON Format
+/// ```json
+/// {
+///     "pattern1": "replacement1",
+///     "pattern2": "replacement2"
+/// }
+/// ```
 pub fn read_json_pairs(path: &str) -> RegexReplacer {
     let json_str = match fs::read_to_string(path) {
         Ok(json) => json,

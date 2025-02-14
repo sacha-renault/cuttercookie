@@ -5,8 +5,18 @@ use std::path::PathBuf;
 use super::RegexReplacer;
 use walkdir::{WalkDir, DirEntry};
 
+/// Files and directories that should be skipped during processing
 const SKIP_ITEMS: [&str;2] = ["", "cuttercookie.json"];
 
+/// Processes a single directory entry by applying regex replacements to its path and content
+///
+/// # Arguments
+/// * `entry` - Directory entry to process
+/// * `source_path` - Base path for calculating relative paths
+/// * `replacer` - RegexReplacer instance containing replacement rules
+///
+/// # Returns
+/// * `Result<(), String>` - Success or error message
 fn process_entry(entry: DirEntry, source_path: &PathBuf, replacer: &RegexReplacer) -> Result<(), String> {
     // Get the relative path
     let item_rpath = entry.path()
@@ -54,6 +64,20 @@ fn process_entry(entry: DirEntry, source_path: &PathBuf, replacer: &RegexReplace
     Ok(())
 }
 
+/// Recursively processes files and directories, applying regex replacements
+///
+/// # Arguments
+/// * `path` - Root path to start processing from
+/// * `excluded_dirs` - List of directory names to exclude from processing
+/// * `replacer` - RegexReplacer containing the replacement rules
+///
+/// # Returns
+/// * `Result<(), String>` - Success or error message
+///
+/// # Errors
+/// * Returns error if file operations fail (read/write/create)
+/// * Returns error if path manipulation fails
+/// * Returns error if UTF-8 conversion fails
 pub fn process_files(path: &str, excluded_dirs: Vec<String>, replacer: RegexReplacer) -> Result<(), String> {
     // Convert input path to PathBuf for easier manipulation
     let source_path = PathBuf::from(path);
@@ -77,4 +101,3 @@ pub fn process_files(path: &str, excluded_dirs: Vec<String>, replacer: RegexRepl
     // Function processing ended successfully
     Ok(())
 }
-
