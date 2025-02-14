@@ -4,5 +4,8 @@ mod tool;
 use cli::entry_point;
 
 fn main() {
-    entry_point();
+    match entry_point() {
+        Ok(_) => println!("Process ran with success"),
+        Err(e) => eprintln!("Error: {}", e)
+    }
 }

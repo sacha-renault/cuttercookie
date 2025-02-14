@@ -1,5 +1,4 @@
 pub mod cuttercookie_json;
-pub mod file;
 pub mod process_files;
 pub mod substitution_rule;
 

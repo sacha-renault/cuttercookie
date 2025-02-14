@@ -9,5 +9,5 @@ pub struct Cli {
 
     /// Directory that will not be included
     #[arg(long, short, value_delimiter = ',', default_value = "Vec::new()")]
-    pub excluded_dirs: Vec<String>
+    pub excluded_items: Vec<String>
 }
