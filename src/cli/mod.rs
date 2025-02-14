@@ -17,7 +17,8 @@ pub fn entry_point() -> Result<(), String> {
     let path_str = path.to_string_lossy().into_owned();
 
     // Build the replacer
-    let replacer = read_json_pairs(&path_str);
+    let replacer = read_json_pairs(&path_str)
+        .map_err(|err| err.to_string())?;
 
     // Check if current dir is empty
     let entries = fs::read_dir(".")

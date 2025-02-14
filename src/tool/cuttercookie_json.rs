@@ -39,29 +39,122 @@ fn parse_json_pairs(json_str: &str) -> Result<RegexReplacer> {
     }
 }
 
-/// Reads and parses substitution rules from a JSON file at the specified path
+/// Reads and parses substitution rules from a JSON file, creating a configured RegexReplacer
 ///
 /// # Arguments
-/// * `path` - File path to the JSON configuration file
+/// * `path` - Path to the JSON configuration file containing pattern-replacement pairs
 ///
 /// # Returns
-/// * `RegexReplacer` - A RegexReplacer configured with the rules from the file
+/// * `Result<RegexReplacer>` - Successfully configured RegexReplacer, or an error if:
+///   - File cannot be read from the specified path
+///   - JSON content is malformed or invalid
+///   - Pattern-replacement pairs cannot be parsed
 ///
-/// # Panics
-/// * Panics if the file cannot be read
-/// * Panics if the JSON content cannot be parsed into valid substitution rules
-///
-/// # Expected JSON Format
-/// ```json
-/// {
-///     "pattern1": "replacement1",
-///     "pattern2": "replacement2"
-/// }
-/// ```
-pub fn read_json_pairs(path: &str) -> RegexReplacer {
+/// # JSON File Structure
+/// The configuration file must contain key-value pairs where:
+/// - Keys are string patterns to match
+/// - Values are their corresponding replacement strings
+pub fn read_json_pairs(path: &str) -> Result<RegexReplacer> {
     let json_str = match fs::read_to_string(path) {
         Ok(json) => json,
-        Err(_) => panic!("Couldn't read \"cuttercookie.json\" at the root path")
+        Err(_) => return Err(anyhow::anyhow!("Couldn't read \"cuttercookie.json\" at the root path"))
     };
-    parse_json_pairs(&json_str).expect("Couldn't parse the \"cuttercookie.json\" at the root path")
+    Ok(parse_json_pairs(&json_str)?)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    /// Creates a temporary JSON file with given content for testing
+    ///
+    /// # Arguments
+    /// * `content` - JSON content to write to the temporary file
+    ///
+    /// # Returns
+    /// * `Result<NamedTempFile>` - Temporary file handle or error if file creation fails
+    fn create_temp_json_file(content: &str) -> Result<NamedTempFile> {
+        let mut temp_file = NamedTempFile::new()?;
+        write!(temp_file, "{}", content)?;
+        Ok(temp_file)
+    }
+
+    #[test]
+    fn test_parse_valid_json() -> Result<()> {
+        let json_str = r#"{
+            "hello world": "greeting",
+            "test": "number"
+        }"#;
+
+        let replacer = parse_json_pairs(json_str)?;
+
+        // Test the replacer's functionality
+        assert_eq!(replacer.replace("hello world"), "{{cookiecutter.greeting}}");
+        assert_eq!(replacer.replace("test.123"), "{{cookiecutter.number}}.123");
+        assert_eq!(replacer.replace("unmatched"), "unmatched");
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_empty_json() -> Result<()> {
+        let json_str = "{}";
+        let replacer = parse_json_pairs(json_str)?;
+
+        // Empty replacer should return input unchanged
+        assert_eq!(replacer.replace("test"), "test");
+        assert_eq!(replacer.replace("hello world"), "hello world");
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_invalid_json() {
+        let invalid_jsons = [
+            r#"{"pattern": "replacement", invalid_json}"#,
+            r#"["pattern", "replacement"]"#,
+            r#"{"pattern": 42}"#,
+            r#""just a string""#
+        ];
+
+        for json in invalid_jsons {
+            assert!(parse_json_pairs(json).is_err());
+        }
+    }
+
+    #[test]
+    fn test_read_valid_json_file() -> Result<()> {
+        let json_content = r#"{
+            "hello world": "greeting",
+            "test": "number"
+        }"#;
+
+        let temp_file = create_temp_json_file(json_content)?;
+        let replacer = read_json_pairs(temp_file.path().to_str().unwrap())
+            .expect("Failed to read valid JSON file");
+
+        assert_eq!(replacer.replace("hello world"), "{{cookiecutter.greeting}}");
+        assert_eq!(replacer.replace("test.123"), "{{cookiecutter.number}}.123");
+        Ok(())
+    }
+
+    #[test]
+    fn test_read_nonexistent_file() {
+        let result = read_json_pairs("nonexistent_file.json");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_read_invalid_json_file() -> Result<()> {
+        let invalid_json = r#"{
+            "pattern1": "replacement1",
+            invalid_content
+        }"#;
+
+        let temp_file = create_temp_json_file(invalid_json)?;
+        let result = read_json_pairs(temp_file.path().to_str().unwrap());
+
+        assert!(result.is_err());
+        Ok(())
+    }
 }

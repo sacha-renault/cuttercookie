@@ -34,11 +34,6 @@ fn process_entry(entry: DirEntry, source_path: &PathBuf, dest_path: & PathBuf, r
     // Create path relative to current directory
     let new_dest_path  = dest_path.join(&new_item_rpath);
 
-    // Ensure parent directory exists
-    if let Some(parent) = new_dest_path.parent() {
-        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-    }
-
     // We don't recreate a root i guess ?
     if SKIP_ITEMS.contains(&new_item_rpath.as_str()) {
         return Ok(()) // End the loop iteration instantly
