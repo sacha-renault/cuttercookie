@@ -9,7 +9,11 @@ pub struct Cli {
 
     /// Directory that will not be included
     #[arg(long, short, value_delimiter = ',')]
-    pub excluded_items: Vec<String>
+    pub excluded_items: Vec<String>,
+
+    /// flag that exclude the main project directory
+    #[arg(long, short)]
+    pub no_root: bool
 }
 
 #[cfg(test)]

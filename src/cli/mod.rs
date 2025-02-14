@@ -59,7 +59,13 @@ pub fn entry_point() -> Result<(), String> {
     }
 
     // process files
-    match process_files(args.path.as_str(), &dest_path.display().to_string(), args.excluded_items, replacer) {
+    match process_files(
+        args.path.as_str(),
+        &dest_path.display().to_string(),
+        args.excluded_items,
+        replacer,
+        !args.no_root)
+    {
         Ok(_) => Ok(()),
         Err(err) => Err(format!("Proccess had error : {}", err))
     }

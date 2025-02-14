@@ -6,7 +6,7 @@ use super::RegexReplacer;
 use walkdir::{WalkDir, DirEntry};
 
 /// Files and directories that should be skipped during processing
-const SKIP_ITEMS: [&str;2] = ["", "cuttercookie.json"];
+const SKIP_ITEMS: [&str;2] = ["", "cookiecutter.json"];
 
 /// Processes a single directory entry by applying regex replacements to its path and content
 ///
@@ -67,6 +67,7 @@ fn process_entry(entry: DirEntry, source_path: &PathBuf, dest_path: & PathBuf, r
 /// * `destination` - Target directory where processed files will be written
 /// * `excluded_dirs` - List of directory names to exclude from processing
 /// * `replacer` - RegexReplacer containing the replacement rules
+/// * `include_parent_dir` - a boolean indicating if parent dir should be included or not
 ///
 /// # Returns
 /// * `Result<(), String>` - Success or error message
@@ -75,10 +76,30 @@ fn process_entry(entry: DirEntry, source_path: &PathBuf, dest_path: & PathBuf, r
 /// * Returns error if file operations fail (read/write/create)
 /// * Returns error if path manipulation fails
 /// * Returns error if UTF-8 conversion fails
-pub fn process_files(path: &str, destination: &str, excluded_dirs: Vec<String>, replacer: RegexReplacer) -> Result<(), String> {
+pub fn process_files(
+    path: &str,
+    destination: &str,
+    excluded_dirs: Vec<String>,
+    replacer: RegexReplacer,
+    include_parent_dir: bool
+) -> Result<(), String> {
     // Convert input path to PathBuf for easier manipulation
     let source_path = PathBuf::from(path);
-    let dest_path = PathBuf::from(destination);
+    let mut dest_path = PathBuf::from(destination);
+
+    // If we include the parent dir
+    // Source path becomes it's own parent
+    if include_parent_dir {
+        // Eventually rename the current
+        let new_root_name = match source_path.file_name() {
+            Some(name) => replacer.replace(name.to_str().ok_or("Invalid name".to_string())?),
+            _ => return Err("We're so not supposed to arrive here".to_string())
+        };
+        dest_path = dest_path.join(new_root_name);
+
+        // We need to create the new dest_path if we arrive here!
+        fs::create_dir(&dest_path).map_err(|_| "Couldn't create dir".to_string())?
+    }
 
     // Walk recursively into the directory
     for entry in WalkDir::new(path)
@@ -155,7 +176,8 @@ mod tests {
             temp_path.to_str().unwrap(),
             temp_path.to_str().unwrap(),
             vec![],
-            replacer
+            replacer,
+            false
         ).expect("Processing should succeed");
 
         let new_filepath_expected = temp_path.join("{{cookiecutter.filename_placeholder}}.txt");
@@ -180,7 +202,8 @@ mod tests {
             temp_path.to_str().unwrap(),
             target_path.to_str().unwrap(),
             vec![],
-            replacer
+            replacer,
+            false
         ).expect("Processing should succeed");
 
         assert!(target_path.join("{{cookiecutter.new}}_dir").exists());
@@ -203,7 +226,8 @@ mod tests {
             temp_path.to_str().unwrap(),
             dest_path.to_str().unwrap(),
             vec!["excluded".to_string()],
-            replacer
+            replacer,
+            false
         ).expect("Processing should succeed");
 
         assert!(dest_path.join("{{cookiecutter.filename_placeholder}}.txt").exists());
@@ -225,7 +249,8 @@ mod tests {
             temp_path.to_str().unwrap(),
             dest_path.to_str().unwrap(),
             vec![],
-            replacer
+            replacer,
+            false
         ).expect("Processing should succeed");
 
         assert!(temp_path.join("cuttercookie.json").exists());
