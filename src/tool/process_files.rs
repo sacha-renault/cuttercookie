@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn test_skip_items() {
         let mut files = HashMap::new();
-        files.insert("cuttercookie.json", "{ \"config\": true }");
+        files.insert("cookiecutter.json", "{ \"config\": true }");
         files.insert("test.txt", "content");
 
         let (_temp_dir, temp_path) = setup_test_directory(files);
@@ -253,10 +253,10 @@ mod tests {
             false
         ).expect("Processing should succeed");
 
-        assert!(temp_path.join("cuttercookie.json").exists());
-        assert!(!dest_path.join("cuttercookie.json").exists());
+        assert!(temp_path.join("cookiecutter.json").exists());
+        assert!(!dest_path.join("cookiecutter.json").exists());
         assert_eq!(
-            fs::read_to_string(temp_path.join("cuttercookie.json")).unwrap(),
+            fs::read_to_string(temp_path.join("cookiecutter.json")).unwrap(),
             "{ \"config\": true }"
         );
     }

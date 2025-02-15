@@ -84,8 +84,8 @@ mod test {
     #[test]
     fn test_parse_valid_json() -> Result<()> {
         let json_str = r#"{
-            "hello world": "greeting",
-            "test": "number"
+            "greeting": "hello world",
+            "number": "test"
         }"#;
 
         let replacer = parse_json_pairs(json_str)?;
@@ -125,8 +125,8 @@ mod test {
     #[test]
     fn test_read_valid_json_file() -> Result<()> {
         let json_content = r#"{
-            "hello world": "greeting",
-            "test": "number"
+            "greeting": "hello world",
+            "number": "test"
         }"#;
 
         let temp_file = create_temp_json_file(json_content)?;
