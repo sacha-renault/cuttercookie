@@ -1,6 +1,6 @@
 use std::fs::{self, File};
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::RegexReplacer;
 use walkdir::{WalkDir, DirEntry};
@@ -18,7 +18,7 @@ const SKIP_ITEMS: [&str;2] = ["", "cookiecutter.json"];
 ///
 /// # Returns
 /// * `Result<(), String>` - Success or error message
-fn process_entry(entry: DirEntry, source_path: &PathBuf, dest_path: & PathBuf, replacer: &RegexReplacer) -> Result<(), String> {
+fn process_entry(entry: DirEntry, source_path: &Path, dest_path: &Path, replacer: &RegexReplacer) -> Result<(), String> {
     // Get the relative path
     let item_rpath = entry.path()
         .strip_prefix(source_path)
@@ -156,10 +156,11 @@ mod tests {
     /// # Returns
     /// * RegexReplacer configured with test patterns
     fn create_test_replacer() -> RegexReplacer {
-        let mut replacements = Vec::new();
-        replacements.push(SubstitutionRule::new("value".to_string(), "value_placeholder".to_string()));
-        replacements.push(SubstitutionRule::new("filename".to_string(), "filename_placeholder".to_string()));
-        replacements.push(SubstitutionRule::new("old".to_string(), "new".to_string()));
+        let replacements = vec![
+            SubstitutionRule::new("value".to_string(), "value_placeholder".to_string()),
+            SubstitutionRule::new("filename".to_string(), "filename_placeholder".to_string()),
+            SubstitutionRule::new("old".to_string(), "new".to_string())
+        ];
         RegexReplacer::new(replacements)
     }
 

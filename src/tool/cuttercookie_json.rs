@@ -59,7 +59,7 @@ pub fn build_replacer(path: &str) -> Result<RegexReplacer> {
         Ok(json) => json,
         Err(_) => return Err(anyhow::anyhow!("Couldn't read \"cookiecutter.json\" at the root path"))
     };
-    Ok(parse_json_pairs(&json_str)?)
+    parse_json_pairs(&json_str)
 }
 
 #[cfg(test)]
