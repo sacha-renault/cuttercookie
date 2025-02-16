@@ -6,7 +6,7 @@ Transform existing projects into reusable templates - the reverse of cookiecutte
 
 ## Overview
 
-Cuttercookie is a powerful file system utility that converts real, existing projects into template structures. Unlike cookiecutter, which generates projects from templates, cuttercookie takes a concrete implementation and transforms it into a flexible, reusable template compatible with cookiecutter.
+Cuttercookie is a file system utility that converts real, existing projects into template structures. Unlike cookiecutter, which generates projects from templates, cuttercookie takes a concrete implementation and transforms it into a flexible, reusable template compatible with cookiecutter.
 
 ## Key Features
 
@@ -84,26 +84,12 @@ cuttercookie ./my-react-app -e build,node_modules,coverage
 Create a template from a Python project, excluding virtual environments and cache directories:
 
 ```bash
-cuttercookie ./python-project -e venv/,__pycache__/,.pytest_cache/ --no-root
+cuttercookie ./python-project -e venv,__pycache__,.pytest_cache --no-root
 ```
-
-## How It Works
-
-1. Analyze the provided project directory structure
-2. Apply exclusion rules for specified directories and files
-3. Identify common patterns and variables in the project
-4. Generate a cookiecutter-compatible template structure
-
-When using the `--no-root` flag, Cuttercookie will:
-- Exclude the root project directory from the template
-- Preserve the internal directory and file structure
-- Useful for creating more granular or nested templates
 
 ## Use Cases
 
 - Convert existing projects to reusable templates
-- Standardize project structures across teams
-- Create project scaffolding tools
 - Facilitate code generation and project initialization
 
 ## Contributing
@@ -115,10 +101,3 @@ Contributions are welcome!
 - Create a feature branch
 - Implement your changes
 - Submit a Pull Request
-
-Please ensure your code follows Rust best practices and includes appropriate tests.
-
-
-## Contact
-
-[Insert contact information or project maintainer details]
